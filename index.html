@@ -68,13 +68,16 @@ h2{font:700 clamp(34px,4.4vw,56px)/.95 var(--display);text-transform:uppercase;l
 .reel-media canvas,.reel-media video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .reel-shade{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,9,8,.85) 0%,rgba(10,9,8,.15) 45%,rgba(10,9,8,.35) 100%)}
 .reel-copy{position:absolute;left:56px;right:56px;bottom:56px}
-.reel-copy h1{font:700 clamp(56px,9vw,150px)/.9 var(--display);text-transform:uppercase;letter-spacing:.01em;margin:0;white-space:nowrap}
-.reel-copy p{margin:18px 0 0;max-width:46ch;color:#d8d1c8;font-size:16px}
+.title-block{display:inline-grid}
+.reel-copy h1{font:700 clamp(56px,9vw,150px)/.88 var(--display);text-transform:uppercase;letter-spacing:.01em;margin:0 0 0 -.04em;white-space:nowrap}
+/* the line under the name is exactly as wide as the name */
+.reel-copy p{width:0;min-width:100%;margin:clamp(14px,1.4vw,22px) 0 0;color:#e2dbd2;font-size:clamp(15px,1.3vw,21px);line-height:1.5;text-wrap:pretty}
 .cta{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 18px;font:500 14px/1 var(--display);letter-spacing:.14em;text-transform:uppercase;text-decoration:none;border:1px solid rgba(239,233,225,.5);cursor:pointer}
 .btn.solid{background:var(--fg);color:var(--ink);border-color:var(--fg)}
 .btn:hover{border-color:var(--tungsten)}
 .btn.solid:hover{background:var(--tungsten);border-color:var(--tungsten)}
+.watch{display:none;position:absolute;left:12px;bottom:12px;align-items:center;gap:8px;padding:8px 12px;background:rgba(10,9,8,.7);border:1px solid rgba(239,233,225,.45);font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase}
 .sound{position:absolute;right:56px;bottom:56px;border:1px solid rgba(239,233,225,.4);padding:8px 12px;font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase}
 
 /* ---------- works ---------- */
@@ -166,11 +169,23 @@ body.tools .tool{display:inline-flex}
   nav.menu a{padding:8px 5px;font-size:13px;letter-spacing:.06em}
   main{height:auto}
   .view,.view.active{position:relative;display:flex;padding:36px 16px 40px;animation:none;scroll-margin-top:var(--head)}
-  #main{height:78svh;min-height:480px;padding:0;overflow:hidden}
+  /* phones: show the whole 16:9 reel uncropped, text below it */
+  #main{height:auto;min-height:0;padding:var(--head) 0 0;overflow:hidden}
+  .reel-media{position:relative;inset:auto;width:100%;aspect-ratio:16/9}
+  .reel-shade{display:none}
+  .watch{display:inline-flex}
+  /* optional vertical reel (SHOWREEL_MOBILE): full-screen and cropped like before */
+  body.vreel #main{height:82svh;min-height:480px;padding:0}
+  body.vreel .reel-media{position:absolute;inset:0;aspect-ratio:auto}
+  body.vreel .reel-shade{display:block}
+  body.vreel .reel-copy{position:absolute;padding:0;left:20px;right:20px;bottom:32px}
   .reel-tool{left:16px;top:calc(var(--head) + 14px)}
-  .reel-copy{left:20px;right:20px;bottom:32px}
-  .reel-copy h1{font-size:clamp(40px,13vw,80px)}
-  .sound{right:20px;bottom:auto;top:calc(var(--head) + 14px)}
+  .reel-copy{position:static;padding:22px 16px 8px}
+  .title-block{display:grid}
+  .reel-copy h1{font-size:clamp(40px,14vw,84px)}
+  .reel-copy p{font-size:15px;margin-top:12px}
+  .sound{display:none}
+  .cta .btn{padding:11px 14px;font-size:13px;letter-spacing:.1em}
   .scroll{overflow:visible;padding:0}
   .works-grid{grid-template-columns:1fr}
   .collage{column-count:2;column-gap:8px}
@@ -207,19 +222,22 @@ body.tools .tool{display:inline-flex}
       <canvas id="reelCanvas" aria-hidden="true"></canvas>
       <video id="reelVideo" muted loop playsinline autoplay hidden></video>
       <div class="reel-shade"></div>
+      <button class="watch" id="watchBtn" hidden>▶ Watch with sound</button>
+      <button class="sound" id="soundBtn" hidden>Sound off</button>
     </div>
     <label class="tool tool-btn reel-tool">＋ Load showreel file
       <input type="file" accept="video/*" id="reelInput" hidden>
     </label>
     <div class="reel-copy">
-      <h1>Ugur Bahar</h1>
-      <p>Videographer in Berlin. Camera, editing and live broadcasting, from concerts to brand channels.</p>
+      <div class="title-block">
+        <h1>Ugur Bahar</h1>
+        <p>Videographer in Berlin. Camera, editing and live broadcasting, from concerts to brand channels.</p>
+      </div>
       <div class="cta">
         <a class="btn solid" href="#works" data-go="works">Selected works</a>
         <a class="btn" href="#photos" data-go="photos">Photography</a>
       </div>
     </div>
-    <button class="sound" id="soundBtn" hidden>Sound off</button>
   </section>
 
   <!-- WORKS -->
@@ -304,6 +322,8 @@ const SOCIAL = [
 /* MEDIA: your showreel and portrait. */
 const SHOWREEL = "media/showreel.mp4";
 const SHOWREEL_POSTER = "media/showreel-poster.jpg";
+/* Optional: a vertical (9:16) cut of the reel for phones, e.g. "media/showreel-vertical.mp4". Empty = phones show the normal reel uncropped. */
+const SHOWREEL_MOBILE = "";
 const PORTRAIT = "media/portrait.jpg";
 /* The edit tools only appear in the Claude preview, never on the live site. */
 const IN_PREVIEW = window.self !== window.top;
@@ -546,7 +566,18 @@ $("#copyContent").onclick=()=>{
 /* ---------- start ---------- */
 if(SHOWREEL){
   const v=$("#reelVideo"); if(SHOWREEL_POSTER) v.poster=SHOWREEL_POSTER;
-  v.src=SHOWREEL; v.hidden=false; reelLive=true; cv.hidden=true; $("#soundBtn").hidden=false;
+  const vertical = SHOWREEL_MOBILE && mq.matches;
+  document.body.classList.toggle("vreel", !!vertical);
+  v.src = vertical ? SHOWREEL_MOBILE : SHOWREEL; v.hidden=false; reelLive=true; cv.hidden=true;
+  $("#soundBtn").hidden=false; $("#watchBtn").hidden=!!vertical;
+  // phones: play the reel full screen with sound, mute again when they come back
+  $("#watchBtn").onclick=()=>{
+    v.muted=false; v.currentTime=0; v.play().catch(()=>{});
+    if(v.requestFullscreen) v.requestFullscreen().catch(()=>{}); else if(v.webkitEnterFullscreen) v.webkitEnterFullscreen();
+  };
+  const remute=()=>{ v.muted=true; $("#soundBtn").textContent="Sound off"; v.play().catch(()=>{}); };
+  document.addEventListener("fullscreenchange",()=>{ if(!document.fullscreenElement) remute(); });
+  v.addEventListener("webkitendfullscreen",remute);
   v.play().catch(()=>{});
 }
 renderPhotos(); setEdit(false); initView();
